@@ -98,47 +98,19 @@ function getFinalCheckoutUrl() {
 }
 
 /**
- * Gerenciamento inteligente de clique nos botões de Checkout
+ * Configuração dos botões de Checkout
+ * Mantém links <a> nativos com a URL oficial da Kirvano, sem interceptação de clique por onClick/JS,
+ * garantindo total compatibilidade com scripts de tracking e UTMs (como Utmify).
  */
 function initCheckoutFlow() {
-  const finalUrl = getFinalCheckoutUrl();
-  const checkoutButtons = document.querySelectorAll('.btn-checkout, a[href="#checkout"]');
+  const checkoutButtons = document.querySelectorAll('.btn-checkout');
 
   checkoutButtons.forEach((btn) => {
-    if (finalUrl) {
-      // Atualiza o atributo href nativo para acessibilidade e abertura limpa
-      btn.setAttribute('href', finalUrl);
-      btn.setAttribute('target', '_self');
+    const currentHref = btn.getAttribute('href');
+    if (!currentHref || currentHref === '#' || currentHref === '#checkout') {
+      btn.setAttribute('href', KIRVANO_CHECKOUT_URL);
     }
-
-    btn.addEventListener('click', (e) => {
-      const urlToOpen = getFinalCheckoutUrl();
-      if (urlToOpen) {
-        // Navegação direta com preservação de tracking
-        window.location.href = urlToOpen;
-        e.preventDefault();
-        return;
-      }
-
-      // Se ainda não houver URL configurada, rola até o box de oferta e aplica pulso luminoso
-      e.preventDefault();
-      const offerCard = document.querySelector('.offer-card');
-      const offerSection = document.getElementById('oferta');
-
-      if (offerSection) {
-        offerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      if (offerCard) {
-        offerCard.classList.remove('highlight-focus');
-        void offerCard.offsetWidth; // Força reflow para reiniciar animação
-        offerCard.classList.add('highlight-focus');
-
-        setTimeout(() => {
-          offerCard.classList.remove('highlight-focus');
-        }, 2500);
-      }
-    });
+    btn.setAttribute('target', '_self');
   });
 }
 
